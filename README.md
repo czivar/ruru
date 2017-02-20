@@ -30,7 +30,15 @@ Installation consists of the following steps:
 
 ## Frequently asked questions
 
-### What does it measure?
+### What does Ruru mean?
+
+Ruru is an owl from New Zealand. The bird has been selected to symbolise our software's 'intelligence' and 'clarity in the darkness'. In Māori tradition the ruru was seen as a watchful guardian. You can learn more [here](http://www.doc.govt.nz/nature/native-animals/birds/birds-a-z/morepork-ruru/).
+
+### Can I deploy it? What are the license restrictions?
+
+Ruru is free to deploy and use. The software is provided using a BSD licence that you can find in the LICENSE file.
+
+### What does Ruru measure?
 
 It measures TCP handshakes for each individual flow: the time it takes to set up a TCP connection. It looks at TCP flags (SYN, SYN-ACK, first ACK) of the TCP packets (and nothing else).
 
