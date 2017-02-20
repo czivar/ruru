@@ -1,0 +1,134 @@
+extends layout
+
+block content
+  div.statspage
+    div(class='panel with-nav-tabs panel-default')
+      div(class='panel-heading')
+        ul(class='nav nav-tabs')
+          li(class='active')
+            a(href='#tab1default' data-toggle='tab') Destination City
+          li
+            a(href='#tab2default' data-toggle='tab') Destination AS
+          li
+            a(href='#tab3default' data-toggle='tab') Destination Country
+          li
+            a(href='#tab4default' data-toggle='tab') Source City
+          li
+            a(href='#tab5default' data-toggle='tab') Source AS
+          li
+            a(href='#tab6default' data-toggle='tab') Source Country
+          li.search
+            input#search(type="text" placeholder="Type to search")     
+      div(class='panel-body')
+        div(class='tab-content')
+          div(class='tab-pane fade in active' id='tab1default')
+            table#statistics(class='table')
+              thead
+                tr
+                  th City
+                  th Min (ms)
+                  th Q1 (ms)
+                  th Median (ms)
+                  th Q2 (ms)
+                  th Max (ms)
+              tbody
+                each stat, val in stats_destination_cities 
+                  tr
+                    td #{val}
+                    td #{stat['min']} ms
+                    td #{stat['q1']} ms
+                    td #{stat['median']} ms
+                    td #{stat['q3']} ms
+                    td #{stat['max']} ms
+          div(class='tab-pane fade' id='tab2default')
+            table#statistics(class='table')
+              thead
+                tr
+                  th ASN
+                  th AS name
+                  th Min (ms)
+                  th Q1 (ms)
+                  th Median (ms)
+                  th Q2 (ms)
+                  th Max (ms)
+              tbody
+                each stat, val in stats_destination_asn 
+                  tr
+                    td AS#{val}
+                    td #{stat['name']}
+                    td #{stat['min']} ms
+                    td #{stat['q1']} ms
+                    td #{stat['median']} ms
+                    td #{stat['q3']} ms
+                    td #{stat['max']} ms
+          div(class='tab-pane fade' id='tab3default')
+            table#statistics(class='table')
+              thead
+                tr
+                  th Country
+                  th Min (ms)
+                  th Q1 (ms)
+                  th Median (ms)
+                  th Q2 (ms)
+                  th Max (ms)
+              tbody
+                each stat, val in stats_destination_countries
+                  tr
+                    td #{val}
+                    td #{stat['min']} ms
+                    td #{stat['q1']} ms
+                    td #{stat['median']} ms
+                    td #{stat['q3']} ms
+                    td #{stat['max']} ms
+          div(class='tab-pane fade' id='tab4default')
+            table#statistics(class='table')
+              thead
+                tr
+                  th City
+                  th Min (ms)
+                  th Max (ms)
+                  th Average (ms)
+              tbody
+                each stat, val in stats_source_cities 
+                  tr
+                    td #{val}
+                    td #{stat['min']} ms
+                    td #{stat['max']} ms
+                    td #{stat['avg']} ms
+          div(class='tab-pane fade' id='tab5default')
+            table#statistics(class='table')
+              thead
+                tr
+                  th ASN
+                  th AS name
+                  th Min (ms)
+                  th Q1 (ms)
+                  th Median (ms)
+                  th Q2 (ms)
+                  th Max (ms)
+              tbody
+                each stat, val in stats_source_asn 
+                  tr
+                    td AS#{val}
+                    td #{stat['name']}
+                    td #{stat['min']} ms
+                    td #{stat['q1']} ms
+                    td #{stat['median']} ms
+                    td #{stat['q3']} ms
+                    td #{stat['max']} ms
+          div(class='tab-pane fade' id='tab6default')
+            table#statistics(class='table')
+              thead
+                tr
+                  th Country
+                  th Min (ms)
+                  th Max (ms)
+                  th Average (ms)
+              tbody
+                each stat, val in stats_source_countries
+                  tr
+                    td #{val}
+                    td #{stat['min']} ms
+                    td #{stat['max']} ms
+                    td #{stat['avg']} ms
+  script(type='text/javascript', src='/javascripts/stats.js')

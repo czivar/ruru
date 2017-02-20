@@ -1,0 +1,155 @@
+body {
+    font: 14px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    height: 100%;
+    min-height: 75rem;
+    padding-top: 5rem;
+    width: 100%;
+    background-color: black;
+}
+
+div#reannz-logo {
+    float: left;
+    margin-left: 20px;
+    margin-top: 12px;
+}
+
+table#entries {
+    display: block;
+    height: 900px;
+    overflow-y: scroll;
+}
+
+li.search {
+    float: right;
+    padding-top: 5px;
+}
+
+div#randomconnectionbar {
+    padding: 10px;
+    color: white;
+    position: fixed; 
+    bottom: 335px;
+    width: 250px;
+    left: 10px;
+    z-index: 99;
+    font-size: 12px;
+    background-color:rgba(66, 191, 244, 0.5);
+}
+
+div#animationbuttons {
+    clear: both;
+    padding-bottom: 3px;
+}
+
+div#randomdata {
+    font-size: 16px;
+}
+
+p.randomtext {
+    margin-top: 8px;
+    margin-bottom: 0px;
+}
+
+div#statsbar {
+    padding-right: 5px;
+    padding-left: 5px;
+    color: white;
+    position: absolute; 
+    top: 65px; 
+    right: 10px;
+    z-index: 99;
+    font-size: 12px;
+    background-color:rgba(66, 191, 244, 0.5);
+}
+
+div#top5bar {
+    color: white;
+    position: fixed;
+    bottom: 15px; 
+    z-index: 99;
+    font-size: 12px;
+    background-color:rgba(66, 191, 244, 0.5);
+}
+
+div.tables {
+    width: 100%;
+    display: table;
+    table-layout: fixed;
+}
+
+div.child {
+    display: table-cell;
+    padding-bottom: 0px;
+}
+
+.top5_table {
+    margin-bottom: 0px;
+}
+
+.top5_table>thead>tr>th {
+    border: 0px;
+}
+
+.table-condensed>thead>tr>th, .table-condensed>tbody>tr>th, .table-condensed>tfoot>tr>th, .table-condensed>thead>tr>td, .table-condensed>tbody>tr>td, .table-condensed>tfoot>tr>td{
+    padding: 2px;
+    text-align: center;
+    border: 0px;
+}
+
+.table-striped > tbody > tr:nth-child(2n+1) > td, .table-striped > tbody > tr:nth-child(2n+1) > th {
+   background-color: rgba(0, 81, 114, 0.6);
+   border: 0px;
+}
+
+div.statspage {
+    padding: 30px;
+}
+
+div#scale {
+    text-align: center;
+    padding: 5px;
+    padding-right: 8px;
+    padding-left: 8px;
+}
+
+div#gradient {
+    width: 100%;
+    height: 10px;
+    background: red; /* For browsers that do not support gradients */
+    background: -webkit-linear-gradient(-90deg, red, yellow, green); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(-90deg, red, yellow, green); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(-90deg, red, yellow, green); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(-90deg, red, yellow, green); /* Standard syntax */
+}
+
+div#left {
+    float: left;
+    display: inline;
+}
+
+div#right {
+    float: right;
+    display: inline;
+}
+
+div.information {
+    text-align: center;
+}
+
+div.connectionnumber {
+    font-size: 22px;
+    text-align: center;
+}
+
+div#map {
+    /*background-color: black;*/
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
+div#stats {
+    height: 450px;
+    width: 100%;
+}

@@ -1,0 +1,9 @@
+[submodule "deps/dpdk"]
+	path = deps/dpdk
+	url = https://github.com/emmericp/dpdk.git
+[submodule "deps/IP2Location-C-Library"]
+	path = deps/IP2Location-C-Library
+	url = https://github.com/chrislim2888/IP2Location-C-Library.git
+[submodule "deps/json-c"]
+	path = deps/json-c
+	url = https://github.com/json-c/json-c.git

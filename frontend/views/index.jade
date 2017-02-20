@@ -1,0 +1,74 @@
+extends layout
+
+block content
+  div#statsbar
+    div.information Connections in the last 1 minute: 
+      div.connectionnumber -
+      div#scale Meaning of colors:
+        div#gradient
+        div#legend
+          div#left 0 ms
+          div#right 500 ms
+      div#animationbuttons
+        button(class="btn btn-primary btn-xs", onclick="startAnimation()") Start Animation
+        button(class="btn btn-primary btn-xs", onclick="stopAnimation()") Stop Animation
+  div#randomconnectionbar
+    div.information Randomly chosen connection
+      p.randomtext From
+      div#randomdata.sourcecity -
+      div#randomdata.sourcecountry -
+      p.randomtext To
+      div#randomdata.destinationcity -
+      div#randomdata.destinationcountry -
+      p.randomtext Latency
+      div#randomdata.latency -
+  div#top5bar
+    div.tables
+      div.child
+        table#top5_table0(class='table table-condensed table-striped top5_table')
+          thead
+            tr
+              th.theader(colspan='3')
+                Top 5 source cities
+            tr
+              th Flag
+              th City
+              th Average end-to-end latency
+          tbody
+              tr
+                td -
+                td -
+                td -
+      div.child
+        table#top5_table1(class='table table-condensed table-striped top5_table')
+          thead
+            tr
+              th.theader(colspan='3')
+                Top 5 closest destination countries
+            tr
+              th Flag
+              th Country
+              th Average end-to-end latency
+          tbody
+              tr
+                td - 
+                td -
+                td - 
+      div.child
+        table#top5_table2(class='table table-condensed table-striped top5_table')
+          thead
+            tr
+              th.theader(colspan='3')
+                Top 5 furthest destination countries
+            tr
+              th Flag
+              th Country
+              th Average end-to-end latency
+          tbody
+              tr
+                td -
+                td -
+                td -
+  div#map
+  script(type='text/javascript', src='/javascripts/bundle.js')
+  script(type='text/javascript', src='/javascripts/viewer.js')
