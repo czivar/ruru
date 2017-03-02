@@ -10,6 +10,8 @@
 #include <json-c/json.h>
 #include <curl/curl.h>
 
+int debug = 0;
+
 static char * locationdb = "data/ip2location-db5.bin";
 static char * asndb = "data/asn.db";
 
@@ -251,7 +253,7 @@ parse_message(char message[256], IP2Location *ip2location, sqlite3 *ip2asn, void
 	zmq_msg_init_size (&msg, strlen(jsonstring));
 	memcpy(zmq_msg_data(&msg), jsonstring, strlen(jsonstring));
 	
-	//printf("Parsed JSON: %s stlen %lu\n", jsonstring, strlen(jsonstring)); 
+	if (debug) printf("Parsed JSON: %s stlen %lu\n", jsonstring, strlen(jsonstring)); 
 
 	//Send it to socket
 	zmq_msg_send(&msg, publisher, 0);
@@ -427,6 +429,10 @@ main (int argc, char **argv)
 	}
 	
 	for ( i = 1; i<argc; i++){
+		if(strcmp(argv[i], "--debug") == 0){
+			debug = 1;		
+			continue;
+		}
 		if(strcmp(argv[i], "--publish") == 0){
 			mode = 2;		
 			continue;

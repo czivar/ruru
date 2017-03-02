@@ -50,8 +50,8 @@ static volatile bool force_quit;
 /* Disabling forwarding */
 static int forwarding = 0;
 
-/* Header streatm */
-static int stream_headers = 0;
+/* Debug mode */
+static int debug = 0;
 
 #define RTE_LOGTYPE_DPDKLATENCY RTE_LOGTYPE_USER1
 
@@ -161,8 +161,6 @@ static struct lcore_params lcore_params_array_default[] = {
 	{0, 1, 2},
 	{0, 2, 3},
 	{0, 3, 4},
-	{0, 4, 5},
-	{0, 5, 6},
 };
 
 static struct lcore_params * lcore_params = lcore_params_array_default;
@@ -207,8 +205,10 @@ send_to_zmq_ipv4(uint32_t sourceip, uint32_t destip, unsigned long long int time
 	snprintf(message, sizeof(message), "LAT-%08x-%08x-%010llu-%010llu-", 
 		(unsigned) sourceip, (unsigned) destip, timestamp_ext, timestamp_int);
 
-	//printf("%s\n", message);
-	//fflush(stdout);
+	if (debug){
+		printf("%s\n", message);
+		fflush(stdout);
+	}
 	if (zmq_client != NULL){
 		zmq_send (zmq_client, message, sizeof(message), 0);
 	}
@@ -339,7 +339,6 @@ track_latency(struct rte_mbuf *m, uint64_t *ipv4_timestamp_syn, uint64_t *ipv4_t
 	if (ipv4_hdr->next_proto_id == IPPROTO_TCP){
 		tcp_hdr = rte_pktmbuf_mtod_offset(m, struct tcp_hdr *, 
 			sizeof(struct ipv4_hdr) + sizeof(struct ether_hdr) + offset);
-		if (stream_headers) send_tcpoptions(tcp_hdr);
 		switch (tcp_hdr->tcp_flags){ 
 			case SYN_FLAG:
 				key = (long long) m->hash.rss << 32 | rte_be_to_cpu_32(tcp_hdr->sent_seq);
@@ -477,18 +476,6 @@ init_zmq_for_lcore(unsigned lcore_id){
 	}	
 	
 	lcore_conf[lcore_id].zmq_client = requester;
-
-	if (stream_headers){	
-		snprintf(hostname_headers, 21, "tcp://127.0.0.1:56%.2d", lcore_id);	
-		printf("Setting up ZMQ for sending headers on lcore %u on socket %s %lu \n", lcore_id, hostname_headers, sizeof(hostname_headers));
-		rc = zmq_bind (requester_headers, hostname_headers);
-		
-		if (rc != 0 || requester_headers == NULL) {
-			rte_exit(EXIT_FAILURE, "Unable to create zmq connection for headers on lcore %u . Issue: %s", lcore_id, zmq_strerror (errno));
-		}	
-
-		lcore_conf[lcore_id].zmq_client_header = requester_headers;
-	}
 }
 
 
@@ -620,7 +607,7 @@ dpdklatency_usage(const char *prgname)
 	       "  -q NQ: number of queue (=ports) per lcore (default is 1)\n"
 	       "  -T PERIOD: statistics will be refreshed each PERIOD seconds (0 to disable, 10 default, 86400 maximum)\n"
 	       " --config (port,queue,lcore)[,(port,queue,lcore)]\n"
-	       "  --[no-]stream-headers: Enable or disable TCP header streaming (disabled by default)\n"
+	       " --debug: shows captured flows\n"
 	       "  --[no-]forwarding: Enable or disable forwarding (disabled by default)\n"
                "      When enabled, the app forwards packets between port 0 and 1:\n",
 	       prgname);
@@ -727,6 +714,7 @@ dpdklatency_parse_args(int argc, char **argv)
 	char *prgname = argv[0];
 	static struct option lgopts[] = {
 		{ "config", 1, 0, 0},
+		{ "debug", no_argument, &debug, 1},
 		{ "forwarding", no_argument, &forwarding, 1},
 		{ "no-forwarding", no_argument, &forwarding, 0},
 		{NULL, 0, 0, 0}
