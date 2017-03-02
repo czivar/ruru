@@ -7,7 +7,7 @@ cd $(dirname "${BASH_SOURCE[0]}")
 cd deps/dpdk
 
 modprobe uio
-(lsmod | grep igb_uio > /dev/null) || insmod ./x86_64-native-linuxapp-gcc/kmod/igb_uio.ko
+(lsmod | grep igb_uio > /dev/null) || insmod ./build/kmod/igb_uio.ko
 
 i=0
 for id in $(tools/dpdk-devbind.py --status | grep -v Active | grep unused=igb_uio | cut -f 1 -d " ")
