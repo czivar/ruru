@@ -13,7 +13,6 @@ const influx = new Influx.InfluxDB({
        total: Influx.FieldType.INTEGER
      },
      tags: [
-      'destination',
       'destination_as',
       'destination_asn',
       'destination_city',
@@ -21,7 +20,6 @@ const influx = new Influx.InfluxDB({
       'destination_countrycode',
       'destination_lat',
       'destination_long',
-      'source',
       'source_as',
       'source_asn',
       'source_city',
