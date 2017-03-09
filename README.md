@@ -16,7 +16,7 @@ The system componses of three parts:
 Communication between components uses sockets (zmq and websockets). The high-level architecture is shown below.
 
 <p align="center">
-<img alt="Architecture" width="650px" src="https://github.com/REANNZ/cooee/raw/master/architecture.png" />
+<img alt="Architecture" width="650px" src="/architecture.png" />
 </p>
 
 # Installation
