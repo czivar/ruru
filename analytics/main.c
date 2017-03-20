@@ -22,7 +22,8 @@ typedef struct {
 
 struct thread_args {
 	char *publish;
-    	char *subscribe;
+	char *influx;
+    	char *bind;
 };
 
 /* Description: Convert the IP address (v4) into number */
@@ -133,7 +134,7 @@ expand_escapes(char* dest, const char* src)
 
 /* Parse incoming messages */
 int 
-parse_message(char message[256], IP2Location *ip2location, sqlite3 *ip2asn, void * publisher, CURL *curl)
+parse_message(char message[256], IP2Location *ip2location, sqlite3 *ip2asn, void *publisher, CURL *curl, char *influx_hostname)
 {
 	char *source_ip_hex;
 	char *destination_ip_hex;
@@ -323,7 +324,7 @@ parse_message(char message[256], IP2Location *ip2location, sqlite3 *ip2asn, void
 		/* First set the URL that is about to receive our POST. This URL can
 		   just as well be a https:// URL if that is what should receive the
 		   data. */ 
-		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8086/write?db=rtt");
+		curl_easy_setopt(curl, CURLOPT_URL, influx_hostname);
                 //printf("Curl request");
 		/* Now specify the POST data */ 
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, influxstring);
@@ -367,11 +368,12 @@ process_socket(void* argp){
 	void *requester = zmq_socket (context, ZMQ_SUB);
 	void *publisher = zmq_socket (context, ZMQ_PUB);
 	struct thread_args *args = argp;
-	char *hostname = args->subscribe;
+	char *hostname = args->bind;
 	char *publish_hostname = args->publish;
+	char *influx_hostname = args->influx;
 	CURL *curl;
 
-	int rc = zmq_connect (requester, hostname);
+	int rc = zmq_bind (requester, hostname);
 	assert (rc == 0);
 
 	rc = zmq_connect (publisher, publish_hostname);
@@ -395,7 +397,7 @@ process_socket(void* argp){
 		int size = zmq_recv (requester, buffer, sizeof(buffer), 0);
 		//printf("buffer: %s\n", buffer);
 		buffer[size] = '\0';
-		parse_message(buffer, ip2location, ip2asn, publisher, curl);
+		parse_message(buffer, ip2location, ip2asn, publisher, curl, influx_hostname);
 	}
 
 	curl_easy_cleanup(curl);
@@ -415,6 +417,7 @@ main (int argc, char **argv)
 	int i, err, mode;
 	pthread_t thread_id[100];
 	char *publish_hostname;
+	char *influx_hostname;
 	char *strlist[argc];	
 
 	struct thread_args *args = malloc(sizeof *args);
@@ -423,8 +426,8 @@ main (int argc, char **argv)
 
 	//Command line argument parsing
 	if (argc < 2){
-		printf("Run as: %s --subscribe tcp://127.0.0.1:5502 tcp://127.0.0.1:5503 tcp://127.0.0.1:5504 tcp://127.0.0.1:5505 --publish tcp://0.0.0.0:6000\n",
-			argv[0]);		
+		printf("Run as: %s --bind tcp://127.0.0.1:5502 tcp://127.0.0.1:5503 --publish tcp://0.0.0.0:6000 --influx http://localhost:8086/write?db=rtt\n",
+			argv[0]);
 		return -1;
 	}
 	
@@ -433,15 +436,19 @@ main (int argc, char **argv)
 			debug = 1;		
 			continue;
 		}
+		if(strcmp(argv[i], "--influx") == 0){
+			mode = 3;		
+			continue;
+		}
 		if(strcmp(argv[i], "--publish") == 0){
 			mode = 2;		
 			continue;
 		}
-		if(strcmp(argv[i], "--subscribe") == 0){
+		if(strcmp(argv[i], "--bind") == 0){
 			mode = 1;		
 			continue;
 		}
-		// subscriber addresses are coming
+		// bind addresses are coming
 		if(mode == 1){
 			strlist[cores] = malloc(1 + strlen(argv[i]));
 			strcpy(strlist[cores], argv[i]);	
@@ -451,6 +458,10 @@ main (int argc, char **argv)
 			publish_hostname = malloc(1 + strlen(argv[i]));
 			strcpy(publish_hostname, argv[i]);
 		}
+		if(mode == 3){
+			influx_hostname = malloc(1 + strlen(argv[i]));
+			strcpy(influx_hostname, argv[i]);
+		}
 	}
 
 	if (publish_hostname == NULL || strlist[0] == NULL){
@@ -459,14 +470,15 @@ main (int argc, char **argv)
 	} else {
 		printf("Publishing on: %s\n", publish_hostname);
 		for ( i = 0; i < cores; i++) {
-			printf("Subscribing on: %s\n", strlist[i]);
+			printf("Binding / listening on: %s\n", strlist[i]);
 		}
 	}
 
 	for ( i = 0; i < cores; i++) {
-		args->subscribe = strlist[i];
+		args->bind = strlist[i];
 		args->publish = publish_hostname;
-		printf("Trying to start listener thread on %s", args->subscribe);
+		args->influx = influx_hostname;
+		printf("Trying to start listener thread on %s", args->bind);
 		err = pthread_create(&thread_id[i], NULL, &process_socket, args);
 		if (err != 0){
 			printf("\n Can't create thread :[%s]", strerror(err));

@@ -179,6 +179,8 @@ struct lcore_conf {
 
 static struct lcore_conf lcore_conf[RTE_MAX_LCORE] __rte_cache_aligned;
 
+static const char* publishto;
+
 static void
 send_header_zmq_ipv4(uint8_t * alldata, uint32_t length)
 {
@@ -457,8 +459,7 @@ init_zmq_for_lcore(unsigned lcore_id){
 	void *context = zmq_ctx_new ();
 	void *requester = zmq_socket (context, ZMQ_PUB);
 	void *requester_headers = zmq_socket (context, ZMQ_PUB);
-	char hostname[21]; 
-	char hostname_headers[21]; 
+	char hostname[28]; 
 	int rc;
 
 	if (lcore_id > 99){
@@ -466,10 +467,15 @@ init_zmq_for_lcore(unsigned lcore_id){
 	}
 
 	//Starting port: 5550, 5551, 5552, etc.
-	snprintf(hostname, 21, "tcp://127.0.0.1:55%.2d", lcore_id);	
-
-	printf("Setting up ZMQ from lcore %u on socket %s %lu \n", lcore_id, hostname, sizeof(hostname));
-	rc = zmq_bind (requester, hostname);
+	if (publishto == NULL){
+		snprintf(hostname, 21, "tcp://127.0.0.1:55%.2d", lcore_id);	
+		printf("Setting up ZMQ from lcore %u on socket %s %lu \n", lcore_id, hostname, sizeof(hostname));
+		rc = zmq_bind (requester, hostname);
+	} else {
+		snprintf(hostname, 28, "tcp://%s:55%.2d", publishto, lcore_id);	
+		printf("Connecting ZMQ from lcore %u to publish to socket %s %lu \n", lcore_id, hostname, sizeof(hostname));
+		rc = zmq_connect (requester, hostname);
+	}
 	
 	if (rc != 0 || requester == NULL) {
 		rte_exit(EXIT_FAILURE, "Unable to create zmq connection on lcore %u . Issue: %s", lcore_id, zmq_strerror (errno));
@@ -602,11 +608,12 @@ dpdklatency_processing_loop(void)
 static void
 dpdklatency_usage(const char *prgname)
 {
-	printf("%s [EAL options] -- -p PORTMASK [-q NQ]\n"
+	printf("%s [EAL options] -- -p PORTMASK [-q NQ] [-T PERIOD] [--config (port, queue, lcore)] [--publishto IP] [--debug] [--forwarding]\n"
 	       "  -p PORTMASK: hexadecimal bitmask of ports to configure\n"
 	       "  -q NQ: number of queue (=ports) per lcore (default is 1)\n"
 	       "  -T PERIOD: statistics will be refreshed each PERIOD seconds (0 to disable, 10 default, 86400 maximum)\n"
 	       " --config (port,queue,lcore)[,(port,queue,lcore)]\n"
+	       " --publishto IP: publish to a specific IP (where analytics is running). If not specified, this program binds.\n"
 	       " --debug: shows captured flows\n"
 	       "  --[no-]forwarding: Enable or disable forwarding (disabled by default)\n"
                "      When enabled, the app forwards packets between port 0 and 1:\n",
@@ -615,7 +622,25 @@ dpdklatency_usage(const char *prgname)
 
 
 static int
-parse_config(const char *q_arg)
+dpdklatency_parse_ip(const char *q_arg)
+{
+	int i;
+	publishto = q_arg;
+	// very simple checks: parameter is not null and it contains a . (e.g., 10.0.0.1)
+	if (q_arg == NULL){
+		publishto = NULL;
+		return -1;
+	}
+	for (i=0; q_arg[i]; q_arg[i]=='.' ? i++ : *q_arg++);
+	if (i != 3){
+		publishto = NULL;
+		return -1;
+	}
+	return 0;
+}
+
+static int
+dpdklatency_parse_config(const char *q_arg)
 {
 	char s[256];
 	const char *p, *p0 = q_arg;
@@ -714,6 +739,7 @@ dpdklatency_parse_args(int argc, char **argv)
 	char *prgname = argv[0];
 	static struct option lgopts[] = {
 		{ "config", 1, 0, 0},
+		{ "publishto", 1, 0, 0},
 		{ "debug", no_argument, &debug, 1},
 		{ "forwarding", no_argument, &forwarding, 1},
 		{ "no-forwarding", no_argument, &forwarding, 0},
@@ -750,9 +776,17 @@ dpdklatency_parse_args(int argc, char **argv)
 		/* long options */
 		case 0:
 			if (!strncmp(lgopts[option_index].name, "config", 6)) {
-				ret = parse_config(optarg);
+				ret = dpdklatency_parse_config(optarg);
 				if (ret) {
 					printf("invalid config\n");
+					dpdklatency_usage(prgname);
+					return -1;
+				}
+			}
+			if (!strncmp(lgopts[option_index].name, "publishto", 9)) {
+				ret = dpdklatency_parse_ip(optarg);
+				if (ret) {
+					printf("invalid publishto\n");
 					dpdklatency_usage(prgname);
 					return -1;
 				}
@@ -938,6 +972,7 @@ main(int argc, char **argv)
 	uint8_t nb_ports, nb_rx_queue;
 	uint8_t nb_ports_available;
 	uint8_t portid, queueid, queue;
+	char *publish_host;
 	unsigned lcore_id;
 
 	/* init EAL */
@@ -991,7 +1026,6 @@ main(int argc, char **argv)
 		/* init port */
 		printf("Initializing port %d ... \n", portid );
 		fflush(stdout);
-
 
 		/* init port */
 		nb_rx_queue = get_port_n_rx_queues(portid);
