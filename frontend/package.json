@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "NODE_ENV=production browserify src/react.js -o public/javascripts/bundle.js -t babelify  -t sassify -t glslify",
+    "build": "NODE_ENV=production browserify src/react.js -o public/javascripts/bundle.js -t babelify  -t sassify -t glslify -t envify",
     "start": "node bin/www"
   },
   "dependencies": {

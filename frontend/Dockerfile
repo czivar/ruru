@@ -13,8 +13,8 @@ RUN npm install
 # Bundle app source
 COPY . /usr/src/app
 
-RUN npm install -g browserify
+RUN npm install -g envify browserify
 
 EXPOSE 3000 3001 6080
 
-CMD npm build && npm start
+CMD echo $MAPBOX_TOKEN && npm run build && npm start

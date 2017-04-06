@@ -15,4 +15,4 @@ In order to run the map, you will have to aquire an API key from Mapbox. It is f
 
 Don't forget to set your token here.
 
-    sudo docker run -p 3001:3001 -p 3000:3000 -p 6080:6080 -e MAPBOX_TOKEN='token_here' frontend
+    sudo docker run -d -p 3001:3001 -p 3000:3000 -p 127.0.0.1:6080:6080 -e MAPBOX_TOKEN='token_here' frontend

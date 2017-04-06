@@ -66,7 +66,7 @@ Once you have all the dependencies installed, you can build the analytics module
 
 To run it, you need to specify a few zmq sockets: sockets it read data from and sockets it will set up to publish data on.
 
-    ./analytics --subscribe tcp://127.0.0.1:5502 tcp://127.0.0.1:5503 --publish tcp://0.0.0.0:6000
+    ./analytics --bind tcp://0.0.0.0:5502 tcp://0.0.0.0:5503 tcp://0.0.0.0:5504 tcp://0.0.0.0:5505 tcp://0.0.0.0:5506 tcp://0.0.0.0:5507 --publish tcp://127.0.0.1:6080 --influx http://127.0.0.1:8086/write?db=rtt
 
 If you see this output, it is running:
 

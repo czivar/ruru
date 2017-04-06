@@ -3,7 +3,7 @@ var router = express.Router();
 const Influx = require('influx');
 
 const influx = new Influx.InfluxDB({
- host: '130.209.247.136',
+ host: 'localhost',
  database: 'rtt',
  schema: [
    {
