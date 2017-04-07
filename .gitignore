@@ -7,3 +7,4 @@ analytics/analytics
 analytics_header/analytics_header
 .DS_Store
 *.swp
+asn.db
