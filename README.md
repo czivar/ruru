@@ -2,7 +2,7 @@
 'Ruru' is a TCP latency monitoring application that helps understanding wide area TCP traffic in real time. 
 It utilises Intel DPDK for high speed packet processing (up to 40Gbit/s) and a Node.JS web frontend to present results.
 
-![Ruru live](/animation.gif)
+![Ruru live](/animation-zoom.gif)
 
 
 
