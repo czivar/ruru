@@ -15,7 +15,7 @@ socket.on('mapstats', function(data){
       source_html += "_64.png' /></td><td>"
       source_html += elem[0]
       source_html += "</td><td>"
-      source_html += elem[1]['q3']
+      source_html += Math.round(elem[1]['mean'])
       source_html += " ms</td></tr>"
     });
     source_html += "</tbody>"

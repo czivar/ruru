@@ -3,7 +3,7 @@ var router = express.Router();
 const Influx = require('influx');
 
 const influx = new Influx.InfluxDB({
- host: 'localhost',
+ host: process.env.INFLUX_HOST,
  database: 'rtt',
  schema: [
    {
@@ -42,7 +42,7 @@ var stats_source_asn = {};
 // This here repeats and queries stats every 20 second
 setInterval(function(){
 
-  influx.query("select min(total), percentile(total, 25) as q1, median(total), percentile(total, 75) as q3, max(total) \
+  influx.query("select min(total), mean(total) as mean, max(total) \
                 from latency \
                 where destination_country != '-' \
                 AND time >=  now() - 10m \
@@ -55,7 +55,7 @@ setInterval(function(){
       });
     });
 
-  influx.query("select min(total), percentile(total, 25) as q1, median(total), percentile(total, 75) as q3, max(total) \
+  influx.query("select min(total), mean(total) as mean, max(total) \
                 from latency \
                 where source_country != '-' \
                 AND time >=  now() - 10m \
@@ -68,7 +68,7 @@ setInterval(function(){
       });
     });
 
-  influx.query("select min(total), percentile(total, 25) as q1, median(total), percentile(total, 75) as q3, max(total) \
+  influx.query("select min(total), mean(total) as mean, max(total) \
                 from latency \
                 where source_city != '-' \
                 AND time >=  now() - 10m \
@@ -81,7 +81,7 @@ setInterval(function(){
       }); 
     });
 
-  influx.query("select min(total), percentile(total, 25) as q1, median(total), percentile(total, 75) as q3, max(total) \
+  influx.query("select min(total), mean(total) as mean, max(total) \
               from latency \
               where destination_city != '-' \
               AND time >=  now() - 10m \
@@ -94,7 +94,7 @@ setInterval(function(){
     }); 
   });
 
-  influx.query("select min(total), percentile(total, 25) as q1, median(total), percentile(total, 75) as q3, max(total) \
+  influx.query("select min(total), mean(total) as mean, max(total) \
               from latency \
               where destination_as != '-' \
               AND time >=  now() - 10m \
@@ -107,7 +107,7 @@ setInterval(function(){
     }); 
   });
 
-  influx.query("select min(total), percentile(total, 25) as q1, median(total), percentile(total, 75) as q3, max(total) \
+  influx.query("select min(total), mean(total) as mean, max(total) \
               from latency \
               where source_as != '-' \
               AND time >=  now() - 10m \
@@ -120,7 +120,7 @@ setInterval(function(){
     }); 
   });
 
-  //console.log(stats_destination_countries);
+  console.log(stats_destination_countries);
 
 }, 20000); 
 
@@ -135,9 +135,9 @@ function getTop5Stats () {
     return [key, stats_destination_countries[key]];
   });
 
-  var top5_source_sorted = top5_source.sort(function(a, b) { return a[1]['q3'] < b[1]['q3'] ? 1 : -1; }).slice(0, 5);
-  var top5_destination_slow = top5_dest.sort(function(a, b) { return a[1]['q3'] < b[1]['q3'] ? 1 : -1; }).slice(0, 5);
-  var top5_destination_fast = top5_dest.sort(function(a, b) { return a[1]['q3'] > b[1]['q3'] ? 1 : -1; }).slice(0, 5);
+  var top5_source_sorted = top5_source.sort(function(a, b) { return a[1]['mean'] < b[1]['mean'] ? 1 : -1; }).slice(0, 5);
+  var top5_destination_slow = top5_dest.sort(function(a, b) { return a[1]['mean'] < b[1]['mean'] ? 1 : -1; }).slice(0, 5);
+  var top5_destination_fast = top5_dest.sort(function(a, b) { return a[1]['mean'] > b[1]['mean'] ? 1 : -1; }).slice(0, 5);
 
   return [top5_source_sorted, top5_destination_fast, top5_destination_slow];
 }
