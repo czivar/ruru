@@ -13,6 +13,6 @@ In order to run the map, you will have to aquire an API key from Mapbox. It is f
 
 ## Run me
 
-Don't forget to set your token here.
+Don't forget to set your token and the IP of your Influx container here.
 
-    sudo docker run -d -p 3001:3001 -p 3000:3000 -p 127.0.0.1:6080:6080 -e MAPBOX_TOKEN='token_here' frontend
+    sudo docker run -d -p 3001:3001 -p 3000:3000 -p 127.0.0.1:6080:6080 -e MAPBOX_TOKEN='token_here' -e INFLUX_HOST='ip_here' frontend
