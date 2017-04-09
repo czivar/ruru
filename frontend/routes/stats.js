@@ -135,7 +135,7 @@ function getTop5Stats () {
     return [key, stats_destination_countries[key]];
   });
 
-  var top5_source_sorted = top5_source.sort(function(a, b) { return a[1]['mean'] < b[1]['mean'] ? 1 : -1; }).slice(0, 5);
+  var top5_source_sorted = top5_source.sort(function(a, b) { return a[1]['mean'] > b[1]['mean'] ? 1 : -1; }).slice(0, 5);
   var top5_destination_slow = top5_dest.sort(function(a, b) { return a[1]['mean'] < b[1]['mean'] ? 1 : -1; }).slice(0, 5);
   var top5_destination_fast = top5_dest.sort(function(a, b) { return a[1]['mean'] > b[1]['mean'] ? 1 : -1; }).slice(0, 5);
 
