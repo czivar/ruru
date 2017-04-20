@@ -45,24 +45,27 @@ ip2no(char* ipstring)
 }
 
 asinfo *
-get_asn(char* ip, sqlite3 *ip2asn)
+get_asn(char* ip, sqlite3_stmt *stmt)
 {
 	uint32_t ipnumber = ip2no(ip);
 	asinfo * info;
-	sqlite3_stmt *stmt;
 
 	info = (asinfo *) malloc(sizeof (asinfo));
 
-	sqlite3_prepare_v2(ip2asn, "select asn,\"as\" from ip2location_asn where ip_from <= ?1 and ip_to >= ?1 limit 1;", -1, &stmt, NULL);
 	sqlite3_bind_int64(stmt, 1, ipnumber); 
 	sqlite3_step(stmt);
 	info->asnumber = sqlite3_column_int(stmt, 0);
 	// This returned pointed ir only valid for a set of time
-	if (info ->asnumber != 0){
-		info->asname = (char *) sqlite3_column_text(stmt, 1);
+	if (info->asnumber != 0){
+		//info->asname = (char *) sqlite3_column_text(stmt, 1);
+		info->asname = malloc ( sizeof(char) * strlen((char *)sqlite3_column_text(stmt, 1))+1 );
+		memcpy(info->asname, (char *) sqlite3_column_text(stmt, 1), strlen((char *)sqlite3_column_text(stmt, 1))+1);
 	} else {
-		info->asname = "-";
+		info->asname = malloc ( sizeof(char) * 2 );
+		memcpy(info->asname, "-", 2);
 	}
+
+	sqlite3_reset(stmt);
    	//printf("AS results: AS%u is %s\n", info->asnumber, info->asname);
 	return info;
 }
@@ -134,7 +137,7 @@ expand_escapes(char* dest, const char* src)
 
 /* Parse incoming messages */
 int 
-parse_message(char message[256], IP2Location *ip2location, sqlite3 *ip2asn, void *publisher, CURL *curl, char *influx_hostname)
+parse_message(char message[256], IP2Location *ip2location, sqlite3_stmt *stmt, void *publisher, CURL *curl, char *influx_hostname)
 {
 	char *source_ip_hex;
 	char *destination_ip_hex;
@@ -218,8 +221,8 @@ parse_message(char message[256], IP2Location *ip2location, sqlite3 *ip2asn, void
 	destination_location = get_location(destination_ip, ip2location);
 
 	// IP -> ASN
-	destination_as = get_asn(destination_ip, ip2asn);
-	source_as = get_asn(source_ip, ip2asn);
+	destination_as = get_asn(destination_ip, stmt);
+	source_as = get_asn(source_ip, stmt);
 	
 	// Latency to int
 	latency_int_internal = atoi (latency_internal);
@@ -339,11 +342,14 @@ parse_message(char message[256], IP2Location *ip2location, sqlite3 *ip2asn, void
 
 	//Free everything malloced
 	zmq_msg_close (&msg);
+	json_object_put(json);
 	IP2Location_free_record(source_location);
 	IP2Location_free_record(destination_location);
 	free(source_ip_hex);
 	free(destination_ip_hex);
+	free(destination_as->asname);
 	free(destination_as);
+	free(source_as->asname);
 	free(source_as);
 	free(latency_external);
 	free(latency_internal);
@@ -363,6 +369,7 @@ void *
 process_socket(void* argp){
 	// TODO: as we are only reading, one handle for sqlite and ip2location might be enough
 	sqlite3 *ip2asn;
+	sqlite3_stmt *stmt;
 	IP2Location *ip2location;
 	void *context = zmq_ctx_new ();
 	void *requester = zmq_socket (context, ZMQ_SUB);
@@ -386,6 +393,9 @@ process_socket(void* argp){
 	
 	rc = sqlite3_open(asndb, &ip2asn);
 	assert (rc == 0);
+	
+	// create reusable sqlite3 stmt
+	sqlite3_prepare_v2(ip2asn, "select asn,\"as\" from ip2location_asn where ip_from <= ?1 and ip_to >= ?1 limit 1;", -1, &stmt, NULL);
 
 	ip2location = IP2Location_open(locationdb);
 	printf("IP2Location API version: %s (%lu)\n", IP2Location_api_version_string(), IP2Location_api_version_num());
@@ -397,7 +407,7 @@ process_socket(void* argp){
 		int size = zmq_recv (requester, buffer, sizeof(buffer), 0);
 		//printf("buffer: %s\n", buffer);
 		buffer[size] = '\0';
-		parse_message(buffer, ip2location, ip2asn, publisher, curl, influx_hostname);
+		parse_message(buffer, ip2location, stmt, publisher, curl, influx_hostname);
 	}
 
 	curl_easy_cleanup(curl);
@@ -501,6 +511,7 @@ main (int argc, char **argv)
 		if(strlist[cores]) free(strlist[cores]);
 	}
 
+	free (args);
 	return 0;
 }
 
