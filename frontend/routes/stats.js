@@ -120,7 +120,7 @@ setInterval(function(){
     }); 
   });
 
-  console.log(stats_destination_countries);
+  //console.log(stats_destination_countries);
 
 }, 20000); 
 
