@@ -1,5 +1,5 @@
 
-#DPDK backend
+# DPDK backend
 
 This is a DPDK application that performs high-speed TCP RTT tracking. It publishes results on ZMQ sockets.
 
@@ -17,7 +17,7 @@ where:
 - 00000000011 is the latency (RTT) measured between the source host and our measurement tap
 - 00000000044 is the latency (RTT) measured between the measurement tap and the destination host
 
-##Running it
+## Running it
 
 After you have complied this app, you will have a binary in your build folder. 
 
@@ -47,7 +47,7 @@ If you are using the --forwarding option, the app behaves like a small bridge - 
 
 The app prints out port statistics periodically. You can specify the time between updates with -T. In production deployment, I recommend -T 60 at least (or larger).
 
-##Installing dependencies and DPDK
+## Installing dependencies and DPDK
 
 Install DPDK and compile it for your target platform. Get DPDK from here: http://dpdk.org.
 
