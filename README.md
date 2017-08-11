@@ -4,7 +4,11 @@ It utilises Intel DPDK for high speed packet processing (up to 40Gbit/s) and a N
 
 ![Ruru live](/animation-zoom.gif)
 
+## Publications
 
+Ruru has been published in SIGCOMM 2017. Our paper is:
+
+[1] Cziva, R., Lorier, C. and Pezaros, D. P. (2017) Ruru: High-speed, Flow-level Latency Measurement and Visualization of Live Internet Traffic. In: SIGCOMM 2017, Los Angeles, CA, USA, 21-25 Aug 2017
 
 ## High-level architecture
 
