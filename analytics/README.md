@@ -3,11 +3,20 @@
 
 ## Data dependency - setting up sqlite database for ASN lookups
 
-Download an ASN database in a .csv format from this site (it is free): http://lite.ip2location.com/database/ip-asn (you will need to register). After downloading, you need to import this csv file to the asn.db database. I have prepared a script for you to do this - you can find it in importcsv.sql
+Download an ASN database in a .csv format from this site (it is free): http://lite.ip2location.com/database/ip-asn (you will need to register). After downloading, you need to import this csv file to the asn.db database. I have prepared a script for you to do this - you can find it in importcsv_asn.sql
 
     cd data
     sqlite asn.db
-    run the contents of importcsv.sql here
+    run the contents of importcsv_asn.sql here
+
+## Data dependency - setting up sqlite database for proxied IPs
+
+Download the Proxy database in a .csv format from this site (it is free): http://lite.ip2location.com/database/px4-ip-proxytype-country-region-city-isp (you will need to register). After downloading, you need to import this csv file to the proxy.db database. I have prepared a script for you to do this - you can find it in importcsv_proxy.sql
+
+    cd data
+    sqlite proxy.db
+    run the contents of importcsv_proxy.sql here
+
 
 ## Data dependency - getting the IP2Location database
 

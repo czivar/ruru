@@ -13,6 +13,7 @@
 int debug = 0;
 
 static char * locationdb = "data/ip2location-db5.bin";
+static char * proxydb = "data/proxy.db";
 static char * asndb = "data/asn.db";
 
 typedef struct {
@@ -68,6 +69,29 @@ get_asn(char* ip, sqlite3_stmt *stmt)
 	sqlite3_reset(stmt);
    	//printf("AS results: AS%u is %s\n", info->asnumber, info->asname);
 	return info;
+}
+
+char *
+get_proxy_type(char* ip, sqlite3_stmt *stmt)
+{
+	uint32_t ipnumber = ip2no(ip);
+	// Proxy type can be: VPN, TOR, PUB, WEB, DCH
+	char *proxy_type;
+	int stat;
+
+	sqlite3_bind_int64(stmt, 1, ipnumber); 
+	stat = sqlite3_step(stmt);
+	if ( sqlite3_column_text(stmt, 0) ){
+		proxy_type = malloc ( sizeof(char) * strlen((char *)sqlite3_column_text(stmt, 0))+1 );
+		memcpy(proxy_type, (char *) sqlite3_column_text(stmt, 0), strlen((char *)sqlite3_column_text(stmt, 0))+1);
+   		printf("Proxy results: %s\n", proxy_type);
+	} else {
+		proxy_type = malloc ( sizeof(char) * 2 );
+                memcpy(proxy_type, "-", 2);
+	}
+
+	sqlite3_reset(stmt);
+	return proxy_type;
 }
 
 /* call the location api */
@@ -137,7 +161,7 @@ expand_escapes(char* dest, const char* src)
 
 /* Parse incoming messages */
 int 
-parse_message(char message[256], IP2Location *ip2location, sqlite3_stmt *stmt, void *publisher, CURL *curl, char *influx_hostname)
+parse_message(char message[256], IP2Location *ip2location, sqlite3_stmt *stmt, sqlite3_stmt *stmt_proxy, void *publisher, CURL *curl, char *influx_hostname)
 {
 	char *source_ip_hex;
 	char *destination_ip_hex;
@@ -159,9 +183,11 @@ parse_message(char message[256], IP2Location *ip2location, sqlite3_stmt *stmt, v
 	char *source_country_escaped; 
 	char *source_city_escaped;
 	char *source_asname_escaped; 
+	char *source_proxy_type;
 	char *destination_country_escaped;
 	char *destination_city_escaped;
 	char *destination_asname_escaped;
+	char *destination_proxy_type;
 	int escaped = 0;
 	int latency_int_internal;
 	int latency_int_external;
@@ -219,6 +245,10 @@ parse_message(char message[256], IP2Location *ip2location, sqlite3_stmt *stmt, v
 	// IP -> location
 	source_location = get_location(source_ip, ip2location);
 	destination_location = get_location(destination_ip, ip2location);
+	
+	// IP -> Proxy
+	source_proxy_type = get_proxy_type(source_ip, stmt_proxy);
+	destination_proxy_type = get_proxy_type(destination_ip, stmt_proxy);
 
 	// IP -> ASN
 	destination_as = get_asn(destination_ip, stmt);
@@ -240,6 +270,7 @@ parse_message(char message[256], IP2Location *ip2location, sqlite3_stmt *stmt, v
 	json_object_object_add(json, "source_long", json_object_new_double(source_location->longitude));
 	json_object_object_add(json, "source_asn", json_object_new_int(source_as->asnumber));
 	json_object_object_add(json, "source_as", json_object_new_string(source_as->asname));
+	json_object_object_add(json, "source_proxy_type", json_object_new_string(source_proxy_type));
 	json_object_object_add(json, "destination_country", json_object_new_string(destination_location->country_long));
 	json_object_object_add(json, "destination_countrycode", json_object_new_string(destination_location->country_short));
 	json_object_object_add(json, "destination_city", json_object_new_string(destination_location->city));
@@ -247,6 +278,7 @@ parse_message(char message[256], IP2Location *ip2location, sqlite3_stmt *stmt, v
 	json_object_object_add(json, "destination_long", json_object_new_double(destination_location->longitude));
 	json_object_object_add(json, "destination_asn", json_object_new_int(destination_as->asnumber));
 	json_object_object_add(json, "destination_as", json_object_new_string(destination_as->asname));
+	json_object_object_add(json, "destination_proxy_type", json_object_new_string(destination_proxy_type));
 	json_object_object_add(json, "latency_internal", json_object_new_int(latency_int_internal));
 	json_object_object_add(json, "latency_external", json_object_new_int(latency_int_external));
 	json_object_object_add(json, "latency_total", json_object_new_int(latency_int_total));
@@ -296,13 +328,15 @@ parse_message(char message[256], IP2Location *ip2location, sqlite3_stmt *stmt, v
 		"source_long=%f,"
 		"source_asn=%u,"
 		"source_as=%s,"
+		"source_proxy_type=%s,"
 		"destination_country=%s,"
 		"destination_countrycode=%s,"
 		"destination_city=%s,"
 		"destination_lat=%f,"
 		"destination_long=%f,"
 		"destination_asn=%u,"
-		"destination_as=%s "
+		"destination_as=%s,"
+		"destination_proxy_type=%s "
 		"internal=%d,external=%d,total=%d",
 		source_country_escaped, 
 		source_location->country_short, 
@@ -311,6 +345,7 @@ parse_message(char message[256], IP2Location *ip2location, sqlite3_stmt *stmt, v
 		source_location->longitude, 
 		source_as->asnumber, 
 		source_asname_escaped,
+		source_proxy_type,
 		destination_country_escaped, 
 		destination_location->country_short, 
 		destination_city_escaped, 
@@ -318,6 +353,7 @@ parse_message(char message[256], IP2Location *ip2location, sqlite3_stmt *stmt, v
 		destination_location->longitude, 
 		destination_as->asnumber, 
 		destination_asname_escaped,
+		destination_proxy_type,
 		latency_int_internal,
 		latency_int_external, 
 		latency_int_total);
@@ -355,11 +391,13 @@ parse_message(char message[256], IP2Location *ip2location, sqlite3_stmt *stmt, v
 	free(latency_internal);
 	free(influxstring);
 	free(source_country_escaped);
-	free(source_city_escaped);
 	free(source_asname_escaped);
+	free(source_city_escaped);
+	free(source_proxy_type);
 	free(destination_country_escaped);
 	free(destination_asname_escaped);
 	free(destination_city_escaped);
+	free(destination_proxy_type);
 	return 0;
 }
 
@@ -369,7 +407,9 @@ void *
 process_socket(void* argp){
 	// TODO: as we are only reading, one handle for sqlite and ip2location might be enough
 	sqlite3 *ip2asn;
+	sqlite3 *ip2proxy;
 	sqlite3_stmt *stmt;
+	sqlite3_stmt *stmt_proxy;
 	IP2Location *ip2location;
 	void *context = zmq_ctx_new ();
 	void *requester = zmq_socket (context, ZMQ_SUB);
@@ -393,9 +433,15 @@ process_socket(void* argp){
 	
 	rc = sqlite3_open(asndb, &ip2asn);
 	assert (rc == 0);
+
+	rc = sqlite3_open(proxydb, &ip2proxy);
+	assert (rc == 0);
 	
 	// create reusable sqlite3 stmt
 	sqlite3_prepare_v2(ip2asn, "select asn,\"as\" from ip2location_asn where ip_from <= ?1 and ip_to >= ?1 limit 1;", -1, &stmt, NULL);
+	
+	// create reusable sqlite3 stmt
+	sqlite3_prepare_v2(ip2proxy, "select proxy_type from ip2proxy where ip_from <= ?1 and ip_to >= ?1 limit 1;", -1, &stmt_proxy, NULL);
 
 	ip2location = IP2Location_open(locationdb);
 	printf("IP2Location API version: %s (%lu)\n", IP2Location_api_version_string(), IP2Location_api_version_num());
@@ -407,11 +453,12 @@ process_socket(void* argp){
 		int size = zmq_recv (requester, buffer, sizeof(buffer), 0);
 		//printf("buffer: %s\n", buffer);
 		buffer[size] = '\0';
-		parse_message(buffer, ip2location, stmt, publisher, curl, influx_hostname);
+		parse_message(buffer, ip2location, stmt, stmt_proxy, publisher, curl, influx_hostname);
 	}
 
 	curl_easy_cleanup(curl);
-	sqlite3_close(ip2asn);	
+	sqlite3_close(ip2asn);
+	sqlite3_close(ip2proxy);
 
 	free(args);
 	zmq_close (requester);
