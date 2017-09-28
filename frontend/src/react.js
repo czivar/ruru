@@ -17,8 +17,6 @@ import DeckGL from 'deck.gl/react';
 import {ArcLayer} from 'deck.gl';
 import ViewportAnimation from './map-utils';
 
-import LayerInfo from './components/layer-info';
-
 // ---- Default Settings ---- //
 /* eslint-disable no-process-env */
 const MAPBOX_ACCESS_TOKEN = process.env.MAPBOX_TOKEN;

@@ -77,14 +77,13 @@ get_proxy_type(char* ip, sqlite3_stmt *stmt)
 	uint32_t ipnumber = ip2no(ip);
 	// Proxy type can be: VPN, TOR, PUB, WEB, DCH
 	char *proxy_type;
-	int stat;
 
 	sqlite3_bind_int64(stmt, 1, ipnumber); 
-	stat = sqlite3_step(stmt);
+	sqlite3_step(stmt);
 	if ( sqlite3_column_text(stmt, 0) ){
 		proxy_type = malloc ( sizeof(char) * strlen((char *)sqlite3_column_text(stmt, 0))+1 );
 		memcpy(proxy_type, (char *) sqlite3_column_text(stmt, 0), strlen((char *)sqlite3_column_text(stmt, 0))+1);
-   		printf("Proxy results: %s\n", proxy_type);
+   		//printf("Proxy results: %s\n", proxy_type);
 	} else {
 		proxy_type = malloc ( sizeof(char) * 2 );
                 memcpy(proxy_type, "-", 2);
@@ -314,7 +313,7 @@ parse_message(char message[256], IP2Location *ip2location, sqlite3_stmt *stmt, s
 	escaped += expand_escapes(destination_asname_escaped, destination_as->asname);
 
 	// this must be enough
-	influxstring_len = strlen(jsonstring) + escaped + 40;
+	influxstring_len = strlen(jsonstring) + escaped + 200;
 	//printf("Escaped: %d, total size: %u \n", escaped, influxstring_len);
 	
 	influxstring = (char *) malloc(sizeof(char) * influxstring_len + 1);
