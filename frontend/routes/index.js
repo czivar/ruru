@@ -76,12 +76,20 @@ client.on('message', function(message){
     
     // Send measurement for the map
     io.emit('latency', {
-      source: m['source_ip'], 
-      destination: m['destination_ip'],
       destination_lat: m['destination_lat'],
       destination_long: m['destination_long'],
+      destination_country: m['destination_country'],
+      destination_city: m['destination_city'],
+      destination_proxy_type: m['destination_proxy_type'],
+      destination_as: m['destination_as'],
+      destination_asn: m['destination_asn'],
       source_lat: m['source_lat'],
       source_long: m['source_long'],
+      source_country: m['source_country'],
+      source_city: m['source_city'],
+      source_proxy_type: m['source_proxy_type'],
+      source_as: m['source_as'],
+      source_asn: m['source_asn'],
       latency: m['latency_total']
     });
 

@@ -3,9 +3,12 @@ body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     height: 100%;
     min-height: 75rem;
-    padding-top: 5rem;
     width: 100%;
     background-color: black;
+}
+
+.navbar {
+    margin-bottom: 0px;
 }
 
 div#reannz-logo {
@@ -54,6 +57,7 @@ p.randomtext {
 div#statsbar {
     padding-right: 5px;
     padding-left: 5px;
+    padding-top: 10px;
     color: white;
     position: absolute; 
     top: 65px; 
@@ -144,12 +148,26 @@ div.connectionnumber {
 
 div#map {
     /*background-color: black;*/
-    position: absolute;
+    position: relative;
     height: 100%;
     width: 100%;
+    z-index: 0;
+    cursor: crosshair;
 }
 
 div#stats {
     height: 450px;
     width: 100%;
 }
+
+div#tooltip {
+  position: absolute;
+  padding: 4px;
+  background-color:rgba(106, 141, 250, 0.8);
+  color: white;
+  max-width: 400px;
+  font-size: 14px;
+  z-index: 99;
+  pointer-events: none;
+}
+

@@ -14,8 +14,10 @@ import MapboxGLMap from 'react-map-gl';
 
 import * as request from 'd3-request';
 import DeckGL from 'deck.gl/react';
-import {ArcLayer, ScreenGridLayer} from 'deck.gl';
+import {ArcLayer} from 'deck.gl';
 import ViewportAnimation from './map-utils';
+
+import LayerInfo from './components/layer-info';
 
 // ---- Default Settings ---- //
 /* eslint-disable no-process-env */
@@ -24,7 +26,7 @@ const MAPBOX_ACCESS_TOKEN = process.env.MAPBOX_TOKEN;
 const INITIAL_STATE = {
   mapViewState: {
     latitude: -1.32000000000005,
-    longitude: 37.486055552412332,
+    longitude: 45.486055552412332,
     zoom: 1.7195968941767825,
     pitch: 26.57984356290917,
     bearing: -1.32000000000005
@@ -44,7 +46,7 @@ const GOTO_NZ = {
 
 const LOOKAT_NZ = {
   latitude: -43.97889477772071,
-  longitude: 131.3568897450038,
+  longitude: 171.3568897450038,
   zoom: 4.7195968941767825,
   pitch: 43.87968924799148,
   bearing: -9.688794326241123
@@ -116,29 +118,19 @@ function mapStateToProps(state) {
   return {
     mapViewState: state.mapViewState,
     points: state.points,
-    arcs: state.arcs
+    arcs: state.arcs,
+    arcStrokeWidth: 4
   };
 }
 
-const ArcLayerExample = props =>
+const MainLayer = props =>
   new ArcLayer({
     ...props,
     id: props.id || 'arcLayer',
     data: props.arcs,
-    strokeWidth: props.arcStrokeWidth || 3,
+    strokeWidth: props.arcStrokeWidth,
     pickable: true,
-    onHover: props.onArcHovered,
-    onClick: props.onArcClicked
-  });
-
-const ScreenGridLayerExample = props =>
-  new ScreenGridLayer({
-    ...props,
-    id: props.id || 'screenGridLayer',
-    data: props.points,
-    minColor: [0, 0, 0, 0],
-    unitWidth: 2,
-    unitHeight: 2
+    onHover: props.onHover
   });
 
 // ---- View ---- //
@@ -146,9 +138,7 @@ class MapApp extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      hoverPoint: null,
-      hoverArc: null,
-      clickItem: null
+      hoveredItem: null
     };
   }
 
@@ -161,12 +151,13 @@ class MapApp extends React.Component {
     window.removeEventListener('resize', this._handleResize);
   }
 
-  @autobind _updateArcStrokeWidth() {
-    this.setState({arcStrokeWidth: 2});
-  }
-
   @autobind _handleResize() {
     this.setState({width: window.innerWidth, height: window.innerHeight});
+  }
+
+  @autobind _onHover(info) {
+    console.log('hover', info);
+    this.setState({hoveredItem: info});
   }
 
   @autobind _handleViewportChanged(mapViewState) {
@@ -174,22 +165,6 @@ class MapApp extends React.Component {
       mapViewState.pitch = 60;
     }
     this.props.dispatch(updateMap(mapViewState));
-  }
-
-  @autobind _handleArcHovered(info) {
-    info.type = 'arc';
-    this.setState({hoverArc: info});
-  }
-
-  @autobind _handleArcClicked(info) {
-    info.type = 'arc';
-    this.setState({clickItem: info});
-  }
-
-  @autobind _onChangeLayers(exampleName) {
-    const {activeExamples} = this.state;
-    activeExamples[exampleName] = !activeExamples[exampleName];
-    this.setState({activeExamples});
   }
 
   @autobind _onWebGLInitialized(gl) {
@@ -201,26 +176,18 @@ class MapApp extends React.Component {
     const props = {
       ...this.props,
       ...this.state,
-      onArcHovered: this._handleArcHovered,
-      onArcClicked: this._handleArcClicked
+      onHover: this._onHover
     };
     const layers = [];
-
-    let layer = ArcLayerExample
-    let layerProps = props;
-    /* eslint-disable max-depth */
-    if (Array.isArray(layer)) {
-      const makeProps = layer[1];
-      layer = layer[0];
-      layerProps = {
-        ...props,
-        ...makeProps(),
-        id: 1
-      };
-    }
-    layers.push(layer(layerProps));
+    layers.push(MainLayer(props));
 
     return layers;
+  }
+
+  _onToggleLayer(layerName, layer) {
+    const activeLayers = {...this.state.activeLayers};
+    activeLayers[layerName] = !activeLayers[layerName];
+    this.setState({activeLayers});
   }
 
   _renderOverlay() {
@@ -245,10 +212,30 @@ class MapApp extends React.Component {
     );
   }
 
+  _renderTooltip() {
+      const {hoveredItem} = this.state;
+      if (hoveredItem && hoveredItem.index >= 0) {
+        const info = hoveredItem.object;
+        return info && (
+          <div id="tooltip"
+            style={{left: hoveredItem.x, top: hoveredItem.y}}>
+              <b>From:</b> {info.source_city} ({info.source_country}) <br/>
+              <b>To:</b> {info.destination_city} ({info.destination_country}) <br/>
+              <b>Source AS:</b> AS{info.source_asn} ({info.source_as}) <br/>
+              <b>Destination AS:</b> AS{info.destination_asn} ({info.destination_as}) <br/>
+              <b>End-to-end latency:</b> <i> {info.latency} ms </i><br/>
+              Source proxy: {info.source_proxy}. Destination proxy: {info.destination_proxy}.
+          </div>
+        );
+      }
+      return null;
+    }
+
   render() {
     const {mapViewState} = this.props;
-    const {width, height} = this.state;
+    const {width, height, hoveredItem, clickedItem} = this.state;
     return (
+      <div>
       <MapboxGLMap
         mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}
         width={width}
@@ -259,6 +246,8 @@ class MapApp extends React.Component {
         onChangeViewport={this._handleViewportChanged}>
         { this._renderOverlay() }
       </MapboxGLMap>
+      { this._renderTooltip() }
+      </div>
     );
   }
 }
@@ -332,31 +321,21 @@ function addNewArc(data, callback){
       data['destination_lat'],
       0.0
     ],
+    source_country: data['source_country'],
+    source_city: data['source_city'],
+    source_proxy: data['source_proxy_type'],
+    source_as: data['source_as'],
+    source_asn: data['source_asn'],
+    destination_country: data['destination_country'],
+    destination_city: data['destination_city'],
+    destination_as: data['destination_as'],
+    destination_asn: data['destination_asn'],
+    destination_proxy: data['destination_proxy_type'],
+    latency: data['latency'],
     color: numberToColorHsl(color),
   });
 
 }
-
-function button_clear_measurements() {
-  store.removeArcs();
-}
-
-// // Randomly generating events for testing (no socket is required)
-// setInterval(function() {
-//   const center = [
-//     174.42694203247012,
-//     -42.751537058389985
-//   ];
-//   const spread = 100;
-//   addNewArc({
-//     source_long: center[0] + (Math.random() - 0.5) * spread,
-//     source_lat: center[1] + (Math.random() - 0.5) * spread,
-//     destination_long: center[0] + (Math.random() - 0.5) * spread,
-//     destination_lat: center[1] + (Math.random() - 0.5) * spread,
-//     latency: 0
-//   });
-
-// }, 2000);
 
 // Listen on the socket.io socket for new data
 socket.on('latency', addNewArc);

@@ -27,18 +27,14 @@ block content
                 tr
                   th City
                   th Min (ms)
-                  th Q1 (ms)
-                  th Median (ms)
-                  th Q2 (ms)
+                  th Avg (ms)
                   th Max (ms)
               tbody
                 each stat, val in stats_destination_cities 
                   tr
                     td #{val}
                     td #{stat['min']} ms
-                    td #{stat['q1']} ms
-                    td #{stat['median']} ms
-                    td #{stat['q3']} ms
+                    td #{stat['avg']} ms
                     td #{stat['max']} ms
           div(class='tab-pane fade' id='tab2default')
             table#statistics(class='table')
@@ -47,9 +43,7 @@ block content
                   th ASN
                   th AS name
                   th Min (ms)
-                  th Q1 (ms)
-                  th Median (ms)
-                  th Q2 (ms)
+                  th Avg (ms)
                   th Max (ms)
               tbody
                 each stat, val in stats_destination_asn 
@@ -57,9 +51,7 @@ block content
                     td AS#{val}
                     td #{stat['name']}
                     td #{stat['min']} ms
-                    td #{stat['q1']} ms
-                    td #{stat['median']} ms
-                    td #{stat['q3']} ms
+                    td #{stat['avg']} ms
                     td #{stat['max']} ms
           div(class='tab-pane fade' id='tab3default')
             table#statistics(class='table')
@@ -67,18 +59,14 @@ block content
                 tr
                   th Country
                   th Min (ms)
-                  th Q1 (ms)
-                  th Median (ms)
-                  th Q2 (ms)
+                  th Avg (ms)
                   th Max (ms)
               tbody
                 each stat, val in stats_destination_countries
                   tr
                     td #{val}
                     td #{stat['min']} ms
-                    td #{stat['q1']} ms
-                    td #{stat['median']} ms
-                    td #{stat['q3']} ms
+                    td #{stat['avg']} ms
                     td #{stat['max']} ms
           div(class='tab-pane fade' id='tab4default')
             table#statistics(class='table')
@@ -86,15 +74,15 @@ block content
                 tr
                   th City
                   th Min (ms)
-                  th Max (ms)
                   th Average (ms)
+                  th Max (ms)
               tbody
                 each stat, val in stats_source_cities 
                   tr
                     td #{val}
                     td #{stat['min']} ms
-                    td #{stat['max']} ms
                     td #{stat['avg']} ms
+                    td #{stat['max']} ms
           div(class='tab-pane fade' id='tab5default')
             table#statistics(class='table')
               thead
@@ -102,9 +90,7 @@ block content
                   th ASN
                   th AS name
                   th Min (ms)
-                  th Q1 (ms)
-                  th Median (ms)
-                  th Q2 (ms)
+                  th Avg (ms)
                   th Max (ms)
               tbody
                 each stat, val in stats_source_asn 
@@ -112,9 +98,7 @@ block content
                     td AS#{val}
                     td #{stat['name']}
                     td #{stat['min']} ms
-                    td #{stat['q1']} ms
-                    td #{stat['median']} ms
-                    td #{stat['q3']} ms
+                    td #{stat['avg']} ms
                     td #{stat['max']} ms
           div(class='tab-pane fade' id='tab6default')
             table#statistics(class='table')
@@ -122,13 +106,13 @@ block content
                 tr
                   th Country
                   th Min (ms)
-                  th Max (ms)
                   th Average (ms)
+                  th Max (ms)
               tbody
                 each stat, val in stats_source_countries
                   tr
                     td #{val}
                     td #{stat['min']} ms
-                    td #{stat['max']} ms
                     td #{stat['avg']} ms
+                    td #{stat['max']} ms
   script(type='text/javascript', src='/javascripts/stats.js')
