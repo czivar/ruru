@@ -14,7 +14,7 @@ Ruru has been published in SIGCOMM 2017. Our paper is:
 
 The system componses of three parts:
 - DPDK-latency backend (written in C / multi-threaded): This software measures the elapsed time between SYN, SYN-ACK and the first ACK TCP packets for all TCP streams. It sends the measurement information (source IP, destination IP, latency (in microsecond)) on a ZMQ sockets.
-- Analytics (written in C / multi-threaded): This component retrieves AS / geotag information for all IPs in the measurement data received from the DPDK backend and generates basic statistics. It pushes information in JSON format on ZMQ sockets.
+- Analytics (written in C / multi-threaded): This component retrieves AS / geotag information for all IPs (using the <a href="http://lite.ip2location.com">IP2location.com</a> databases) in the measurement data received from the DPDK backend and generates basic statistics. It pushes information in JSON format on ZMQ sockets.
 - Frontend: It is a Node.js built with React and Deck.Gl. It uses socket.io to communicate with the browser.
 
 Communication between components uses sockets (zmq and websockets). The high-level architecture is shown below.
@@ -45,6 +45,10 @@ Ruru is free to deploy and use. The software is provided using a BSD licence tha
 ### What does Ruru measure?
 
 It measures TCP handshakes for each individual flow: the time it takes to set up a TCP connection. It looks at TCP flags (SYN, SYN-ACK, first ACK) of the TCP packets (and nothing else).
+
+### How does Ruru figure out geographical location / ASN information for IP addresses?
+
+Ruru uses the <a href="http://lite.ip2location.com">IP2Location.com</a> databases for IP->ASN, IP->geolocation and IP->proxy information mapping (these are 3 different databases from IP2Location).
 
 ### What processing performance does Ruru provide?
 
