@@ -33,7 +33,7 @@ You can get a free IP2Location database from here: http://lite.ip2location.com/d
 
 Start a command similar to this (change path to an empty directory where data will be stored)
 
-    sudo docker run -d -p 127.0.0.18086:8086 --name influxcontainer -v /home/rcziva/ruru/influxdb:/var/lib/influxdb influxdb
+    sudo docker run -d -p 127.0.0.1:8086 --name influxcontainer -v /home/rcziva/ruru/influxdb:/var/lib/influxdb influxdb
 
 Set the retention policy for Influx
 
