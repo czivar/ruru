@@ -4,7 +4,12 @@ It utilises Intel DPDK for high speed packet processing (up to 40Gbit/s) and a N
 
 ![Ruru live](/animation-zoom.gif)
 
-## Publications
+## Publications, talks, podcasts
+
+Ruru at RIPE 75: https://ripe75.ripe.net/archives/video/92/
+
+Ruru was featured in a PacketPushers podcast: 
+http://packetpushers.net/podcast/podcasts/pq-142-tcp-latency-monitoring-ruru/
 
 Ruru has been published in SIGCOMM 2017. Our paper is:
 
