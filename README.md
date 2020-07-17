@@ -63,4 +63,4 @@ The core of Ruru (that measures the latency for each flow) is based on DPDK, the
 
 All DPDK supported NICs can be used for Ruru. All supported NICs can be found here: http://dpdk.org/doc/nics. We used Intel X520 NICs at REANNZ.
 
-In case of any other questions, please contact Richard Cziva (r.cziva.1@research.gla.ac.uk)
+In case of any other questions, please contact Richard Cziva (richard@es.net)
