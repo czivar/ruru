@@ -24,7 +24,7 @@
     "jade": "~1.11.0",
     "lodash.flattendeep": "^3.0.2",
     "luma.gl": "^2.10.0",
-    "morgan": "~1.7.0",
+    "morgan": "~1.9.1",
     "react-map-gl": "^1.7.2",
     "save-pixels": "^2.3.0",
     "serve-favicon": "~2.3.0",
